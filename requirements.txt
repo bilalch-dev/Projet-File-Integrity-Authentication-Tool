@@ -1,0 +1,11 @@
+# Fichier requirements.txt
+# Dépendances nécessaires pour le projet de signature et de protection de fichiers.
+
+# 1. Bibliothèque cryptographique principale (ECDSA, AES, PBKDF2)
+cryptography
+
+# 3. Manipulation et création de PDF (pour générer des rapports de signature)
+ReportLab
+
+# 4. Création d'un exécutable final (pour distribuer l'outil)
+pyinstaller

@@ -1,0 +1,8 @@
+# Ignorer les fichiers et dossiers temporaires
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.log
