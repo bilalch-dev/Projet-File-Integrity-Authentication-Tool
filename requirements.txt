@@ -9,3 +9,5 @@ ReportLab
 
 # 4. Création d'un exécutable final (pour distribuer l'outil)
 pyinstaller
+
+dotenv
