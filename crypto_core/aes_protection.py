@@ -1,9 +1,17 @@
 import os
+from dotenv import load_dotenv
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.backends import default_backend
 
+load_dotenv()
+
+MAGIC = os.getenv("MAGIC").encode()
+SALT_SIZE = int(os.getenv("SALT_SIZE"))
+NONCE_SIZE = int(os.getenv("NONCE_SIZE"))
+KEY_LEN = int(os.getenv("KEY_LEN"))
+ITERATIONS = int(os.getenv("ITERATIONS"))
 
 def derive_key(password: bytes, salt: bytes) -> bytes:
     kdf = PBKDF2HMAC(
