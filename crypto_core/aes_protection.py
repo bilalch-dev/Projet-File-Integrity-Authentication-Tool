@@ -61,6 +61,6 @@ def file_decryption(input_file_path: str, output_file_path: str, password: str):
         f.write(decrypted_content)
 
 
-# Example usage
+#Example usage
 #file_encryption("class_schedule.pdf", "class_schedule_encrypted.pdf.aeg", "bilal")
-file_decryption("class_schedule_encrypted.pdf.aeg", "class_schedule_decrypted.pdf", "bilal")
+#file_decryption("class_schedule_encrypted.pdf.aeg", "class_schedule_decrypted.pdf", "bilal")
