@@ -1,10 +1,7 @@
-# Logique de l'application Tkinter
-
 import tkinter as tk
-
-def main():
-    # ...setup code...
-    pass
+from ecdsa_signature_gui import IntegrityApp
 
 if __name__ == "__main__":
-    main()
+    root = tk.Tk()
+    app = IntegrityApp(root)
+    root.mainloop()

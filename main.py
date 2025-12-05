@@ -1,6 +1,8 @@
-# Point d'entrée de l'application
-
-from gui.main_app import main
+# main.py
+import tkinter as tk
+from gui import IntegrityApp
 
 if __name__ == "__main__":
-    main()
+    root = tk.Tk()
+    app = IntegrityApp(root)
+    root.mainloop()

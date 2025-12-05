@@ -1,17 +1,13 @@
 # Implémentation de la signature ECDSA et SHA-256
-import os
-import hashlib
+from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import ec 
-from cryptography.hazmat.primitives import hashes
-import getpass
-import base64
 from cryptography.exceptions import InvalidSignature
-import cryptography
-import cryptography.hazmat.primitives.asymmetric.ec
-import cryptography.hazmat.primitives.hashes
-import cryptography.hazmat.primitives.serialization
+from cryptography.hazmat.primitives import hashes
+import hashlib
+import base64
+import os
 
 def HashGeneration(file_path):
     if os.path.exists(file_path):
@@ -23,7 +19,6 @@ def HashGeneration(file_path):
             return file_hash
     else:
         print("File doesn't exist !!!!!")
-file_hash=HashGeneration(r"C:\Users\HP\Desktop\STP.txt")
 
 def ECDSA_KeyGeneration():
     courbe=ec.SECP256R1()
@@ -34,21 +29,27 @@ def ECDSA_KeyGeneration():
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.BestAvailableEncryption(b"yasseralloufi")
     )
-    os.makedirs(r"C:\Users\HP\Desktop\Projet_Cryptographie\Projet-File-Integrity-Authentication-Tool\Keys", exist_ok=True)
-    with open(r"C:\Users\HP\Desktop\Projet_Cryptographie\Projet-File-Integrity-Authentication-Tool\Keys\Private_Key.Pem","wb") as file:
+    keys_dir = r"C:\Users\HP\Desktop\Projet_Cryptographie\Projet-File-Integrity-Authentication-Tool\Keys"
+    os.makedirs(keys_dir, exist_ok=True)
+    
+    private_key_path = os.path.join(keys_dir, "Private_Key.Pem")
+    with open(private_key_path,"wb") as file:
         file.write(Pem_PrivateKey)
         print("Private key saved to private_key.pem in PEM format.")
+    
     Pem_PublicKey=PublicKey.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
-    with open(r"C:\Users\HP\Desktop\Projet_Cryptographie\Projet-File-Integrity-Authentication-Tool\Keys\Public_Key.Pem","wb") as file:
+    
+    public_key_path = os.path.join(keys_dir, "Public_Key.Pem")
+    with open(public_key_path,"wb") as file:
         file.write(Pem_PublicKey)
         print("Public key saved to public_key.pem in PEM format.")
-ECDSA_KeyGeneration()
+    
+    return private_key_path, public_key_path
 
-def Load_PrivateKey(path):
-    passwd=getpass.getpass("Enter your password for the private key: ").encode()
+def Load_PrivateKey(path,passwd=None):
     try:    
         with open(path,"rb") as file:
             PrivateKey=serialization.load_pem_private_key(
@@ -59,33 +60,57 @@ def Load_PrivateKey(path):
     except Exception as e:
         print("❌ Your password is incorrect, or the key is invalid.")
         return None
-PrivateKey=Load_PrivateKey(r"C:\Users\HP\Desktop\Projet_Cryptographie\Projet-File-Integrity-Authentication-Tool\Keys\Private_Key.Pem")
 
 def Load_PublicKey(path):
     with open(path,"rb") as file:
         data=file.read()
         publicKey=serialization.load_pem_public_key(data)
         return publicKey
-PublicKey=Load_PublicKey(r"C:\Users\HP\Desktop\Projet_Cryptographie\Projet-File-Integrity-Authentication-Tool\Keys\Public_Key.Pem")
 
 def Sign_hash(PrivateKey,file_hash):
     if PrivateKey is None:
         print("Impossible de signer : clé privée non chargée.")
-        exit()
+        return None
     hash_bytes=bytes.fromhex(file_hash)
-    signature=PrivateKey.sign(hash_bytes, ec.ECDSA(hashes.SHA256()))
+    signature=PrivateKey.sign(hash_bytes, ec.ECDSA(Prehashed(hashes.SHA256())))
     signature_encoded=base64.b64encode(signature)
     return signature_encoded
-Signature=Sign_hash(PrivateKey,file_hash)
 
-def Verify_Signature(Signature,PublicKey,file_hash):
-    hash_bytes=bytes.fromhex(file_hash)
-    signature_decoded=base64.b64decode(Signature)
+def save_signature(file_path, Signature):
+    sig_path = file_path + ".sig"
     try:
-        PublicKey.verify(signature_decoded,hash_bytes,ec.ECDSA(hashes.SHA256()))
-        print("Signature is Valid")
+        signature_bytes = base64.b64decode(Signature)
+        with open(sig_path, "wb") as f:
+            f.write(signature_bytes)
+        print(f"✅ Signature sauvegardée → {os.path.basename(sig_path)}")
+        return sig_path
+    except Exception as e:
+        print(f"❌ Échec sauvegarde : {e}")
+        return None
+
+def Load_signature(sig_path):
+    if not os.path.exists(sig_path):
+        print(f"❌ Fichier signature introuvable : {sig_path}")
+        return None
+    try:
+        with open(sig_path, "rb") as f:
+            signature_bytes = f.read()
+        print(f"✅ Signature chargée ({len(signature_bytes)} octets)")
+        return signature_bytes
+    except Exception as e:
+        print(f"❌ Erreur lors du chargement de la signature : {e}")
+        return None
+
+def Verify_Signature(Signature_bytes, PublicKey, file_hash):
+    try:
+        hash_bytes = bytes.fromhex(file_hash)
+        PublicKey.verify(
+            Signature_bytes,
+            hash_bytes,
+            ec.ECDSA(Prehashed(hashes.SHA256()))
+        )
+        print("✅ Signature is Valid")
         return True
     except InvalidSignature:
-        print("Signature is invalid")
+        print("❌ Signature is invalid")
         return False
-Verify_Signature(Signature,PublicKey,file_hash)
