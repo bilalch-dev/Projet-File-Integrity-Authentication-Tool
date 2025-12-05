@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from aes_protection_gui import SecureApp
+from ecdsa_signature_gui import IntegrityApp
+
 
 # --- THEME DEFINITION (Reused for consistency) ---
 THEME_COLORS = {
@@ -71,15 +73,23 @@ class MainMenu:
         for widget in self.root.winfo_children():
             widget.destroy()
         
-        # 2. Initialize the Encryption Interface (from gui_layout.py)
-        # This class will automatically resize the window and build its own UI
-        SecureApp(self.root)
+        # 2. Initialize the Encryption Interface and pass callback to return to main menu
+        SecureApp(self.root, on_back=self.show_main_menu)
 
     def load_signature_interface(self):
-        """Placeholder for future configuration."""
-        # Currently does nothing, or you can print to console
-        print("Signature interface selected - Pending configuration.")
-        # Optional: messagebox.showinfo("Info", "Module coming soon.")
+        # 1. Clear current widgets (remove Main Menu)
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        
+        # 2. Initialize the Signature Interface and pass callback to return to main menu
+        IntegrityApp(self.root, on_back=self.show_main_menu)
+
+    # New: show_main_menu rebuilds the main menu UI
+    def show_main_menu(self):
+        # Remove all widgets and rebuild the main menu
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        self.build_ui()
 
 def main():
     root = tk.Tk()

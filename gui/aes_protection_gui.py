@@ -37,12 +37,10 @@ THEME_COLORS = {
 }
 
 class SecureApp:
-    def __init__(self, root):
+    def __init__(self, root, on_back=None):
         self.root = root
-        self.root.title("Encryption Tool")
-        self.root.geometry("680x580")
-        self.root.minsize(600, 500)
-        
+        self.on_back = on_back
+
         # Variables
         self.input_path = tk.StringVar()
         self.output_path = tk.StringVar()
@@ -93,18 +91,24 @@ class SecureApp:
                         borderwidth=0)
 
     def build_ui(self):
+        # Set geometry to ensure all buttons are visible
+        self.root.geometry("750x620")
+        
         c = THEME_COLORS
         main = ttk.Frame(self.root, padding="40 30 40 40")
         main.pack(fill=tk.BOTH, expand=True)
 
+        # --- Header ---
         header_lbl = tk.Label(main, text="SECURE FILE ENCRYPTION", 
                               bg=c["bg_root"], fg=c["text_main"], 
                               font=c["font_header"], anchor="w")
         header_lbl.pack(fill=tk.X, pady=(0, 30))
 
+        # --- File Inputs ---
         self.create_file_field(main, "INPUT SOURCE PATH", self.input_path, self.browse_input)
         self.create_file_field(main, "OUTPUT DESTINATION", self.output_path, self.browse_output)
 
+        # --- Password Section ---
         pass_container = ttk.Frame(main)
         pass_container.pack(fill=tk.X, pady=(0, 25))
 
@@ -123,6 +127,7 @@ class SecureApp:
                        activebackground=c["bg_root"], activeforeground=c["accent"],
                        font=("Courier New", 9)).pack(side=tk.LEFT)
 
+        # --- Main Action Buttons ---
         action_grid = ttk.Frame(main)
         action_grid.pack(fill=tk.X, pady=(10, 0))
         action_grid.columnconfigure(0, weight=1)
@@ -134,10 +139,18 @@ class SecureApp:
         b2 = ttk.Button(action_grid, text="DECRYPT DATA", style="Primary.TButton", command=lambda: self.process("decrypt"))
         b2.grid(row=0, column=1, sticky="ew", padx=(10, 0), ipady=12)
 
+        # --- Progress Bar & Status ---
         self.progress = ttk.Progressbar(main, mode='indeterminate', style="Cyan.Horizontal.TProgressbar")
         self.progress.pack(fill=tk.X, pady=(30, 10))
 
         tk.Label(main, textvariable=self.status_msg, bg=c["bg_root"], fg=c["text_dim"], font=("Courier New", 9)).pack(anchor="w")
+
+        # --- Bottom Controls (Back Button) ---
+        controls = tk.Frame(main, bg=c["bg_root"]) 
+        controls.pack(side="bottom", fill="x", pady=(20,0))
+
+        back_btn = ttk.Button(controls, text="< RETURN TO MENU", style="Secondary.TButton", command=self._on_back)
+        back_btn.pack(side="left", ipadx=5)
 
     def create_file_field(self, parent, label_text, var, cmd):
         container = ttk.Frame(parent)
@@ -227,3 +240,11 @@ class SecureApp:
         else:
             self.status_msg.set("Operation Failed")
             messagebox.showerror("Error", msg)
+
+    def _on_back(self):
+        # clear current interface widgets
+        for w in self.root.winfo_children():
+            w.destroy()
+        # call provided callback to rebuild main menu
+        if callable(self.on_back):
+            self.on_back()

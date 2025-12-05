@@ -1,6 +1,7 @@
 # gui/app.py
 import tkinter as tk
 from tkinter import filedialog
+from tkinter import ttk
 import threading
 import os
 import sys
@@ -16,10 +17,14 @@ from crypto_core import (
 )
 
 class IntegrityApp:
-    def __init__(self, root):
+    def __init__(self, root, on_back=None):
         self.root = root
+        self.on_back = on_back
+        self.build_ui()
+
+    def build_ui(self):
         self.root.title("🛡️ FILE INTEGRITY & AUTHENTICATION TOOL")
-        self.root.geometry("750x450")
+        self.root.geometry("750x480") # Slightly increased height for better spacing
         self.root.configure(bg="#000000")
         self.setup_ui()
 
@@ -135,6 +140,27 @@ class IntegrityApp:
             bg="#000000"
         )
         self.status_label.pack(pady=(5, 10))
+
+        # --- Bottom controls (Back Button) ---
+        # Fixed: Background is black, button uses tk.Button to match this class's style
+        controls = tk.Frame(self.root, bg="#000000")
+        controls.pack(side="bottom", fill="x", pady=(0, 20))
+
+        back_btn = tk.Button(
+            controls, 
+            text="< RETURN TO MENU", 
+            command=self._on_back,
+            font=("Courier", 10, "bold"),
+            bg="#000000",             # Black background
+            fg="#00FFFF",             # Cyan text
+            activebackground="#00FFFF", # Invert on hover
+            activeforeground="#000000",
+            relief=tk.RAISED,
+            bd=1,
+            padx=10,
+            pady=5
+        )
+        back_btn.pack(side="left", padx=50)
 
     # --- Méthodes inchangées (browse_file, update_progress, etc.) ---
     def browse_file(self):
@@ -319,3 +345,11 @@ class IntegrityApp:
                 text=f"❌ {str(e)}",
                 fg="#FF5555"
             ))
+
+    def _on_back(self):
+        # clear current interface widgets
+        for w in self.root.winfo_children():
+            w.destroy()
+        # call provided callback to rebuild main menu
+        if callable(self.on_back):
+            self.on_back()
