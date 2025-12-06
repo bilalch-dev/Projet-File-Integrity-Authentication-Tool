@@ -179,8 +179,10 @@ class IntegrityApp:
             self.progress_bar.coords(self.progress_fill, 0, 0, x, 6)
 
     def generate_keys(self):
+        # Prompt for password (can be empty for no encryption)
+        passwd = self.ask_password_dialog("🔑 Key Encryption Password", "Enter password (leave blank for no encryption):")
         try:
-            private_path, public_path = ECDSA_KeyGeneration()
+            private_path, public_path = ECDSA_KeyGeneration(password=passwd if passwd else None)
             self.status_label.config(
                 text=f"✅ Keys generated: {os.path.basename(private_path)}",
                 fg="#00FFCC"

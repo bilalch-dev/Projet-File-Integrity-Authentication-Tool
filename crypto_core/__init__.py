@@ -10,9 +10,13 @@ from .ecdsa_signature import (
 )
 
 import os
-KEYS_DIR = r"C:\Users\HP\Desktop\Projet_Cryptographie\Projet-File-Integrity-Authentication-Tool\Keys"
+import pathlib
+current_dir = pathlib.Path(__file__).parent
+
+KEYS_DIR = current_dir.parent / "Keys"
 PRIVATE_KEY_PATH = os.path.join(KEYS_DIR, "Private_Key.Pem")
 PUBLIC_KEY_PATH = os.path.join(KEYS_DIR, "Public_Key.Pem")
+
 
 __all__ = [
     'HashGeneration',

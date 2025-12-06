@@ -5,6 +5,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import ec 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes
+import pathlib
 import hashlib
 import base64
 import os
@@ -20,16 +21,23 @@ def HashGeneration(file_path):
     else:
         print("File doesn't exist !!!!!")
 
-def ECDSA_KeyGeneration():
+def ECDSA_KeyGeneration(password=None):
     courbe=ec.SECP256R1()
     PrivateKey=ec.generate_private_key(courbe)
     PublicKey=PrivateKey.public_key()
+    # Use provided password, or no encryption if None/empty
+    if password:
+        encryption_algo = serialization.BestAvailableEncryption(password.encode())
+    else:
+        encryption_algo = serialization.NoEncryption()
     Pem_PrivateKey=PrivateKey.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.BestAvailableEncryption(b"yasseralloufi")
+        encryption_algorithm=encryption_algo
     )
-    keys_dir = r"C:\Users\HP\Desktop\Projet_Cryptographie\Projet-File-Integrity-Authentication-Tool\Keys"
+    current_dir = pathlib.Path(__file__).parent
+
+    keys_dir = current_dir.parent / "Keys"
     os.makedirs(keys_dir, exist_ok=True)
     
     private_key_path = os.path.join(keys_dir, "Private_Key.Pem")
@@ -58,6 +66,7 @@ def Load_PrivateKey(path,passwd=None):
         )
         return PrivateKey
     except Exception as e:
+        print(f"Error loading private key: {e}")
         print("❌ Your password is incorrect, or the key is invalid.")
         return None
 
